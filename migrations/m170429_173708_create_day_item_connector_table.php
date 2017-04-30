@@ -20,9 +20,9 @@ class m170429_173708_create_day_item_connector_table extends Migration
                 'meal_item' => $this->integer()->notNull(),
             ]
         );
-        $this->addPrimaryKey('day_item_pk_date_type', 'day_item', ['date', 'type']);
+        $this->createIndex('day_item_idx_date_type', 'day_item', ['date', 'type']);
         $this->addForeignKey(
-            'day_item-meal_item_pk_meal_item-id',
+            'day_item-meal_item_fk_meal_item-id',
             'day_item',
             'meal_item',
             'meal_item',
