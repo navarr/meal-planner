@@ -2,6 +2,10 @@
 
 namespace app\controllers;
 
+use app\models\Day;
+use app\models\DayItem;
+use app\models\Meal;
+use app\models\MealItem;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -60,7 +64,33 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $dates = [];
+
+        // Select the current date
+        $tz = new \DateTimeZone('America/New_York');
+        $day = $start = new \DateTimeImmutable('00:00:01', $tz); // today
+
+        // Create an array for the next three weeks
+        $interval = new \DateInterval('P1D');
+        $i = 0;
+        do {
+            $dates[$day->format('Y-m-d')] = [
+                'day' => $day,
+                'meals' => [],
+            ];
+            ++$i;
+            $day = $day->add($interval);
+        } while($i < (7*3));
+
+        $end = $day;
+
+        // Get all meals for that range
+        $items = Meal::find()->where(['between', 'date', $start->format('Y-m-d'), $end->format('Y-m-d')])->with('items')->all();
+        foreach ($items as $item) { /** @var Meal $item */
+            $dates[$item->date]['meals'][$item->name] = $item->getItems()->all();
+        }
+
+        return $this->render('index', ['dates' => $dates]);
     }
 
     /**
